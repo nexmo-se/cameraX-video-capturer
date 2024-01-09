@@ -5,11 +5,11 @@ import android.annotation.SuppressLint
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.LifecycleOwner
 import com.opentok.android.BaseVideoRenderer
 import com.opentok.android.OpentokError
 import com.opentok.android.Publisher
@@ -18,7 +18,6 @@ import com.opentok.android.Session
 import com.opentok.android.Stream
 import com.opentok.android.Subscriber
 import com.opentok.android.SubscriberKit
-import com.vonage.camerax_video_capturer.databinding.ActivityMainBinding
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 
@@ -28,7 +27,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private var subscriber: Subscriber? = null
     private var publisherViewContainer: RelativeLayout? = null
     private var subscriberViewContainer: LinearLayout? = null
-    private lateinit var viewBinding: ActivityMainBinding
 
     private val publisherListener: PublisherKit.PublisherListener = object :
         PublisherKit.PublisherListener {
@@ -49,7 +47,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             Log.d(TAG, "onConnected: Connected to session " + session.sessionId)
             val mirrorVideoCapturer = MirrorVideoCapturer(
                 this@MainActivity,
-                this@MainActivity as LifecycleOwner,
                 Publisher.CameraCaptureResolution.HIGH,
                 Publisher.CameraCaptureFrameRate.FPS_30
             )
@@ -120,7 +117,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(R.layout.activity_main)
         if (!OpenTokConfig.isValid) {
             finishWithMessage("Invalid OpenTokConfig. " + OpenTokConfig.description)
@@ -128,6 +124,11 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         }
         publisherViewContainer = findViewById(R.id.publisherview)
         subscriberViewContainer = findViewById(R.id.subscriberview)
+
+        findViewById<Button>(R.id.cycle_camera).setOnClickListener {
+            publisher?.cycleCamera()
+        }
+
         requestPermissions()
     }
 

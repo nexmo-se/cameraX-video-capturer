@@ -1,70 +1,40 @@
 package com.vonage.camerax_video_capturer
 
-import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.graphics.ImageFormat
-import android.hardware.camera2.CameraAccessException
-import android.hardware.camera2.CameraCaptureSession
-import android.hardware.camera2.CameraCharacteristics
-import android.hardware.camera2.CameraDevice
-import android.hardware.camera2.CameraManager
-import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
-import android.media.Image
-import android.media.ImageReader
-import android.os.Build
-import android.os.Handler
-import android.os.HandlerThread
 import android.util.Log
 import android.util.Range
 import android.util.Size
 import android.util.SparseArray
 import android.util.SparseIntArray
-import android.view.Display
-import android.view.Surface
-import android.view.WindowManager
 import androidx.annotation.OptIn
-import androidx.annotation.RequiresApi
 import androidx.camera.camera2.interop.Camera2Interop
 import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import com.opentok.android.BaseVideoCapturer
 import com.opentok.android.BaseVideoCapturer.CaptureSwitch
 import com.opentok.android.Publisher.CameraCaptureFrameRate
 import com.opentok.android.Publisher.CameraCaptureResolution
-import java.nio.ByteBuffer
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.Collections
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.math.abs
 
 typealias ImageListener = (image: ImageProxy) -> Unit
 
 class MirrorVideoCapturer(
     ctx: Context,
-    lifecycleOwner: LifecycleOwner,
     resolution: CameraCaptureResolution,
     fps: CameraCaptureFrameRate
 ) : BaseVideoCapturer(), CaptureSwitch {
 
     private val context = ctx
-    private val lifecycleOwner = lifecycleOwner
     private var cameraFrame: ImageProxy? = null
-    private var cameraIndex = 0
     private val frameDimensions: Size
     private val desiredFps: Int
     private var isCaptureStarted = false
@@ -73,7 +43,6 @@ class MirrorVideoCapturer(
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var cameraExecutor: ExecutorService
 
-    @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(ExperimentalCamera2Interop::class) private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
@@ -98,7 +67,6 @@ class MirrorVideoCapturer(
                 .build()
                 .also {
                     it.setAnalyzer(cameraExecutor, FrameAnalyzer { image ->
-                        Log.d("iuji123", LocalDateTime.now().toString())
                         cameraFrame = image
                         provideBufferFramePlanar(
                             image.planes[0].buffer,
@@ -119,7 +87,7 @@ class MirrorVideoCapturer(
                 }
 
             // Select back camera as a default
-            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+            val cameraSelector = if (isFrontCamera) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
                 // Unbind use cases before rebinding
@@ -127,7 +95,7 @@ class MirrorVideoCapturer(
 
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    lifecycleOwner, cameraSelector, imageAnalyzer)
+                    context as LifecycleOwner, cameraSelector, imageAnalyzer)
                 isCaptureStarted = true
 
             } catch(exc: Exception) {
@@ -143,16 +111,12 @@ class MirrorVideoCapturer(
     }
 
 
-
     private class FrameAnalyzer(private val listener: ImageListener) : ImageAnalysis.Analyzer {
         override fun analyze(image: ImageProxy) {
             listener(image)
             image.close()
         }
     }
-
-    /* custom exceptions */
-    class CameraXException(message: String?) : RuntimeException(message)
 
     /* Constructors etc... */
     init {
@@ -172,7 +136,6 @@ class MirrorVideoCapturer(
     /**
      * Starts capturing video.
      */
-    @RequiresApi(Build.VERSION_CODES.O)
     @Synchronized
     override fun startCapture(): Int {
         startCamera()
@@ -243,16 +206,18 @@ class MirrorVideoCapturer(
 
     @Synchronized
     override fun cycleCamera() {
-        //switchCamera()
+        isFrontCamera = !isFrontCamera
+        startCamera()
     }
 
     override fun getCameraIndex(): Int {
-        return cameraIndex
+        return if (isFrontCamera) CameraSelector.LENS_FACING_FRONT else CameraSelector.LENS_FACING_BACK
     }
 
     @Synchronized
     override fun swapCamera(cameraId: Int) {
-        //switchCamera()
+        isFrontCamera = !isFrontCamera
+        startCamera()
     }
 
 //    private val isFrontCamera: Boolean

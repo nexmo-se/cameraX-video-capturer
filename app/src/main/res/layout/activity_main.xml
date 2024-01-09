@@ -29,5 +29,18 @@
             android:layout_alignParentRight="true"
             android:paddingBottom="@dimen/activity_vertical_margin"
             android:paddingRight="@dimen/activity_horizontal_margin" />
+
+        <Button
+            android:id="@+id/cycle_camera"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/baseline_cycle_camera_24"
+            android:elevation="2dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            android:paddingLeft="@dimen/activity_horizontal_margin" />
     </RelativeLayout>
 </RelativeLayout>

@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.vonage.camerax_video_capturer"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -32,9 +32,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
-    }
-    buildFeatures {
-        viewBinding = true
     }
 }
 
