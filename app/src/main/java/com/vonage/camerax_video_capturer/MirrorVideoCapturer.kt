@@ -220,10 +220,6 @@ class MirrorVideoCapturer(
         startCamera()
     }
 
-//    private val isFrontCamera: Boolean
-//        get() = cameraInfoCache != null && cameraInfoCache!!.isFrontFacing
-
-
     companion object {
         private val TAG = MirrorVideoCapturer::class.java.simpleName
 
