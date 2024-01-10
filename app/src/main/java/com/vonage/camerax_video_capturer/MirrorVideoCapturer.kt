@@ -51,7 +51,7 @@ class MirrorVideoCapturer(
             cameraProvider = cameraProviderFuture.get()
 
             val resolutionSelector = ResolutionSelector.Builder()
-                .setResolutionStrategy(ResolutionStrategy(frameDimensions, ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER))
+                .setResolutionStrategy(ResolutionStrategy(frameDimensions, ResolutionStrategy.FALLBACK_RULE_NONE))
                 .build()
 
             // Image Analysis
